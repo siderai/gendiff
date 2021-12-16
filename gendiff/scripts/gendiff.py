@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-import argparse
 import json
+
+import argparse
+import yaml
+
 
 def main():
     parser = argparse.ArgumentParser(description='Generate diff')
@@ -14,35 +17,43 @@ def main():
 if __name__ == '__main__':
     main()
 
-def generate_diff(file_path1, file_path2):
-    
-    # identify format of input files (for parsing)
-    if file_path1.endswith('.json') and file_path2.endswith('.json'):
-        encoded_file1 = json.load(open('file1')
-        encoded_file2 = json.load(open('file2')
 
-
-    yaml = ('.yaml', '.yml')   
-    if file_path1.endswith(yaml) and file_path2.endswith(yaml):
-
-    
-
-    common_keys = json1.keys() & json2.keys()
-    first_only = json1.keys() - json2.keys()
-    second_only = json2.keys() - json1.keys()
-    
-    result = ["{",]
-    for key in common_keys:
-        if json1[key] == json2[key]:
-            result.append(f"  {key}: {json1[key]}")
+def generate_diff(filepath1, filepath2, format_name):
+    # identify the format of input files and parse them into Py object (dict)
+    def decode(filepath):
+        '''
+        Yaml/json parser
+        :param filepath: path of json/yaml
+        :return: dict
+        '''
+        if filepath.endswith('.json'):
+            file = json.load(open(filepath, mode='r'))
         else:
-            result.append(f"- {key}: {json1[key]}")
-            result.append(f"+ {key}: {json2[key]}")
-    for key in first_only:
-        result.append(f"- {key}: {json1[key]}")
-    for key in second_only:
-        result.append(f"+ {key}: {json2[key]}")
-    result.append("}")
+            yaml_format = ('.yaml', '.yml')
+            if filepath.endswith(yaml_format):
+                file = yaml.load(open(filepath, mode='r'), Loader=yaml.Loader)
+        return file
+    file1, file2 = decode(filepath1), decode(filepath2)
 
-    result_str = "\n".join(x for x in result)
-    return result_str
+
+# generate list of output diff statements
+result = ["{"]
+for key in common_keys:
+    if file1[key] == file2[key]:
+        if not isinstance(file1[key], dict):
+            result.append(f"  {key}: {file1[key]}")
+    else:
+        result.append(f"- {key}: {file1[key]}")
+        result.append(f"+ {key}: {file2[key]}")
+for key in first_only:
+    result.append(f"- {key}: {file1[key]}")
+for key in second_only:
+    result.append(f"+ {key}: {file2[key]}")
+result.append("}")
+# convert list to string
+result_str = "\n".join(x for x in result)
+return result_str
+
+
+
+
