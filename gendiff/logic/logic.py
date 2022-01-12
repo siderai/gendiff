@@ -1,7 +1,7 @@
 def compare(file1, file2):
     """
-    Compare two dicts and return inner representation of their difference.
-    In result the beginnings of keys are changed to store difference:
+    Compare two dicts and create their difference form.
+    The beginnings of original keys are changed to store difference:
         1. '- ': item is only in 1st file (and value is not a dict);
         2. '+ ': item is only in 2nd file (and value is not a dict);
         3. '= ': items are equal;
@@ -37,7 +37,7 @@ def compare(file1, file2):
     return result
 
 
-s = {
+fixt1 = {
   "common": {
     "setting1": "Value 1",
     "setting2": 200,
@@ -64,7 +64,7 @@ s = {
   }
 }
 
-d = {
+fixt2 = {
   "common": {
     "follow": False,
     "setting1": "Value 1",
