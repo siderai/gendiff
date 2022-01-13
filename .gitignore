@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-gendiff/scripts/__pycache__/
+__pycache__/
 *.py[cod]
 
 # C extensions
@@ -28,5 +28,24 @@ pip-delete-this-directory.txt
 .tox/
 .coverage
 .cache
+nosetests.xml
+coverage.xml
 
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Rope
+.ropeproject
+
+# Django stuff:
+*.log
+*.pot
+
+# Sphinx documentation
+docs/_build/
 

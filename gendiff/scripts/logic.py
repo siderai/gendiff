@@ -31,8 +31,6 @@ def compared(file1: dict, file2: dict) -> dict:
         common_keys = file1.keys() & file2.keys()
         first_only = file1.keys() - file2.keys()
         second_only = file2.keys() - file1.keys()
-    else:
-        return {}
 
     # create operational image of difference
     diff = {}
@@ -66,103 +64,8 @@ def str_formatter(diff: dict) -> str:
     blank.insert(0, '{')
     blank.append('}')
     result = '\n'.join(blank)
-    return result
+    print(result)
 
 
 def plain_formatter():
     pass
-
-
-
-
-
-
-
-
-fixt1 = {
-  "common": {
-    "setting1": "Value 1",
-    "setting2": 200,
-    "setting3": True,
-    "setting6": {
-      "key": "value",
-      "doge": {
-        "wow": ""
-      }
-    }
-  },
-  "group1": {
-    "baz": "bas",
-    "foo": "bar",
-    "nest": {
-      "key": "value"
-    }
-  },
-  "group2": {
-    "abc": 12345,
-    "deep": {
-      "id": 45
-    }
-  }
-}
-
-fixt2 = {
-  "common": {
-    "follow": False,
-    "setting1": "Value 1",
-    "setting3": None,
-    "setting4": "blah blah",
-    "setting5": {
-      "key5": "value5"
-    },
-    "setting6": {
-      "key": "value",
-      "ops": "vops",
-      "doge": {
-        "wow": "so much"
-      }
-    }
-  },
-  "group1": {
-    "foo": "bar",
-    "baz": "bars",
-    "nest": "str"
-  },
-  "group3": {
-    "deep": {
-      "id": {
-        "number": 45
-      }
-    },
-    "fee": 100500
-  }
-}
-
-file1 = {
-  "host": "hexlet.io",
-  "timeout": 50,
-  "proxy": "123.234.53.22",
-  "follow": False
-}
-
-file2 = {
-  "timeout": 20,
-  "verbose": True,
-  "host": "hexlet.io"
-}
-
-first_and_second = '{\n  - follow: False\n    host: hexlet.io\n  - proxy: 123.234.53.22\n  - timeout: 50\n  + timeout: 20\n  + verbose: True\n}'
-
-
-print(compared(file1, file2))
-print(str_formatter(compared(file1, file2)))
-print(first_and_second)
-print(first_and_second == str_formatter(compared(file1, file2)))
-
-print(isinstance(fixt1, dict))
-print(isinstance(fixt2, dict))
-
-
-
-
-
