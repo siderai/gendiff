@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import json 
+from gendiff.logic.logic import decoded, compared, str_formatter
+from gendiff.tests.fixtures
 
 import argparse
-import yaml
 
 
 def main():
@@ -17,20 +17,11 @@ if __name__ == '__main__':
     main()
 
 
-def generate_diff(filepath1, filepath2, format_name):
+def generate_diff(filepath1, filepath2):
     # identify the format of input files and parse them into dict
-    def decode(filepath: str) -> file_: dict:
-        '''
-        Yaml/json parser
-        :param filepath: path of json/yaml
-        :return: dict
-        '''
-        if filepath.endswith('.json'):
-            file_ = json.load(open(filepath, mode='r'))
-        else:
-            if filepath.endswith('.yaml', '.yml'):
-                file_ = yaml.load(open(filepath, mode='r'), Loader=yaml.Loader)
-        return file_
-        
-    file1, file2 = decode(filepath1), decode(filepath2)
+    file1, file2 = decoded(filepath1), decoded(filepath2)
+    diff = compared(file1, file2)
+    result = str_formatter(diff)
+    return result
+
 
