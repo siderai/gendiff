@@ -32,7 +32,7 @@ def compared(file1: dict, file2: dict) -> dict:
         first_only = file1.keys() - file2.keys()
         second_only = file2.keys() - file1.keys()
 
-    # create operational image of difference
+    # create image of difference
     diff = {}
     for key in common_keys:
         if file1[key] == file2[key]:
@@ -51,7 +51,7 @@ def compared(file1: dict, file2: dict) -> dict:
     return diff
 
 
-def str_formatter(diff: dict) -> str:
+def format_stylish(diff: dict) -> str:
     """ Prepare diff for output as json-like string. """
     blank = []
     for sign, key in diff:
@@ -67,5 +67,5 @@ def str_formatter(diff: dict) -> str:
     print(result)
 
 
-def plain_formatter():
+def format_plain(diff: dict) -> str:
     pass

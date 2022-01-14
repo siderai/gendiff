@@ -1,5 +1,5 @@
 #!/usr/bin/env
-from logic import decoded, compared, str_formatter
+from logic import decoded, compared, format_stylish
 
 import argparse
 
@@ -7,7 +7,7 @@ import argparse
 def generate_diff(filepath1, filepath2):
     file1, file2 = decoded(filepath1), decoded(filepath2)
     diff = compared(file1, file2)
-    result = str_formatter(diff)
+    result = format_stylish(diff)
     return result
 
 
@@ -19,5 +19,6 @@ def main():
     args = parser.parse_args()
     print(generate_diff(args.first_file, args.second_file))
 
-    if __name__ == '__main__':
-        main()
+
+if __name__ == '__main__':
+    main()
