@@ -3,3 +3,6 @@ lint:
 
 diff:
 	python gendiff/gendiff.py
+
+test:
+	poetry run pytest

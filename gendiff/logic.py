@@ -23,26 +23,30 @@ def compared(file1: dict, file2: dict) -> dict:
         4. ' ': keys are equal, but values are dicts
                                 and should be compared recursively.
     """
-    # check if input is correct
     if isinstance(file1, dict) and isinstance(file2, dict):
         # compare keys of the dicts
         common_keys = file1.keys() & file2.keys()
         first_only = file1.keys() - file2.keys()
         second_only = file2.keys() - file1.keys()
-
+        
     # create image of difference
     diff = {}
+
+    # compare common keys
     for key in common_keys:
         if file1[key] == file2[key]:
             diff[('=', key)] = file1[key]
+        elif isinstance(file1[key], dict) and isinstance(file2[key], dict):
+            diff[(' ', key)] = compared(file1[key], file2[key])
         else:
-            if isinstance(file1[key], dict) and isinstance(file2[key], dict):
-                diff[(' ', key)] = compared(file1[key], file2[key])
-            else:
-                diff[('-', key)] = file1[key]
-                diff[('+', key)] = file2[key]
+            diff[('-', key)] = file1[key]
+            diff[('+', key)] = file2[key]
+
+    # mark deleted keys
     for key in first_only:
         diff[('-', key)] = file1[key]
+
+    # mark added keys
     for key in second_only:
         diff[('+', key)] = file2[key]
 
@@ -59,7 +63,7 @@ def format_stylish(diff: dict) -> str:
             blank.append(f'    {key}: {diff[(sign, key)]}')
         else:
             blank.append(f'  {sign} {key}: {diff[(sign, key)]}')
-
+    
     blank = sorted(blank, key=lambda x: x[4]) # index of key's first char
     blank.insert(0, '{')
     blank.append('}')
