@@ -9,10 +9,8 @@ def decoded(filepath: str) -> dict:
     if filepath.endswith('.json'):
         return json.load(open(filepath))
     else:
-        yaml_format = ('.yaml', '.yml')
-        if filepath.endswith(yaml_format):
+        if filepath.endswith('.yaml') or filepath.endswith('.yml'):
             return yaml.load(open(filepath, mode='r'), Loader=yaml.Loader)
-
 
 
 def compared(file1: dict, file2: dict) -> dict:
@@ -57,6 +55,8 @@ def format_stylish(diff: dict) -> str:
     for sign, key in diff:
         if sign == '=':
             blank.append(f'    {key}: {diff[(sign, key)]}')
+        elif sign == ' ':
+            blank.append(f'    {key}: {diff[(sign, key)]}')
         else:
             blank.append(f'  {sign} {key}: {diff[(sign, key)]}')
 
@@ -65,7 +65,3 @@ def format_stylish(diff: dict) -> str:
     blank.append('}')
     result = '\n'.join(blank)
     print(result)
-
-
-def format_plain(diff: dict) -> str:
-    pass
