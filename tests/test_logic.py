@@ -1,6 +1,5 @@
-from gendiff.logic import decoded, compared, format_stylish
 import json
-
+from gendiff.logic import decoded, is_dict, compared, format_stylish
 
 import pytest
 import yaml
@@ -50,6 +49,12 @@ def test_decoded(json1, json2, jsoncomplex1, jsoncomplex2, yaml1, yaml2, yamlcom
     assert decoded(yaml2) == yaml.load(open(yaml2), Loader=yaml.Loader)
     assert decoded(yamlcomplex1) == yaml.load(open(yamlcomplex1), Loader=yaml.Loader)
     assert decoded(yamlcomplex2) == yaml.load(open(yamlcomplex2), Loader=yaml.Loader)
+
+def test_is_dict():
+    assert is_dict(dict()) == True
+    assert is_dict(list()) == False
+    assert is_dict(set()) == False
+
 
 
 simple_view = {
