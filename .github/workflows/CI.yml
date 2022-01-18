@@ -29,4 +29,5 @@ jobs:
         make lint
     - name: Test with pytest
       run: |
+        pip install pytest
         make test
