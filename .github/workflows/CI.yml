@@ -29,4 +29,6 @@ jobs:
         make lint
     - name: Test with pytest
       run: |
-        python -m pytest
+        poetry add --dev pytest
+        make install
+        make test
