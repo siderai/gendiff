@@ -29,7 +29,12 @@ jobs:
         make lint
     - name: Test with pytest
       run: |
-        CODECLIMATE_REPO_TOKEN=ed3368785be593ed7ba2b0d57705ee88bca01b11b0426ccf5e61ed324f1abaef
-        cc-test-reporter before-build
         make test
-        cc-test-reporter after-build
+    - name: Test & publish code coverage
+      uses: paambaati/codeclimate-action@v3.0.0
+      env: 
+        CODECLIMATE_REPO_TOKEN: ed3368785be593ed7ba2b0d57705ee88bca01b11b0426ccf5e61ed324f1abaef
+        CC_TEST_REPORTER_ID: 8792c8e14d089c0545ba202bb29bd6b0e055452fb65c2e3976b24d465d456b42
+      with:
+        coverageCommand: poetry run coverage
+        debug: true
