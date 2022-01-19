@@ -31,6 +31,9 @@ jobs:
       run: |
         make test
     - name: Test coverage and send result to CodeClimate
+      env:
+        CODECLIMATE_REPO_TOKEN: ed3368785be593ed7ba2b0d57705ee88bca01b11b0426ccf5e61ed324f1abaef
+        CC_TEST_REPORTER_ID: 8792c8e14d089c0545ba202bb29bd6b0e055452fb65c2e3976b24d465d456b42
       run: |
         curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
         chmod +x ./cc-test-reporter
