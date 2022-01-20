@@ -58,17 +58,77 @@ def compared(file1: dict, file2: dict) -> dict:
 
 def format_stylish(diff: dict) -> str:
     """ Prepare diff for output as json-like string. """
-    blank = []
+    blank = list()
     for sign, key in diff:
         if sign == '=':
             blank.append(f'    {key}: {diff[(sign, key)]}')
         elif sign == ' ':
-            blank.append(f'    {key}: {diff[(sign, key)]}')
+            blank.append(f'    {key}: {format_stylish(diff[(sign, key)])}')
         else:
             blank.append(f'  {sign} {key}: {diff[(sign, key)]}')
 
-    blank = sorted(blank, key=lambda x: x[4])  # index of key's first char
+    blank = sorted(blank, key=lambda x: x[4])  # index of key's first non-empty char
     blank.insert(0, '{')
     blank.append('}')
     result = '\n'.join(blank)
     print(result)
+
+
+def format_plain(diff: dict) -> str:
+    ''' Second output formatter: human-friendly text'''
+    blank = list()
+    name = list()
+    complex_value = '[complex value]'
+    for sign, key in diff:
+
+        if sign == '-':
+            # check if key was updated or just removed
+            try:
+                updated_value = diff[('+', key)]  # this line raises exception if key was removed
+                if is_dict(updated_value):
+                    output_update = complex_value
+                else:
+                    output_update = json.dumps(updated_value)  # translate data from Python back to json
+
+                initial_value = diff[('-', key)]
+                output_initial_value = json.dumps(initial_value)
+
+                # accumulate name
+                name.append(key)
+                output_name = '.'.join(name)
+                # Gen diff output
+                blank.append(f'Property \'{output_name}\' was updated. ' 
+                            f'From {output_initial_value} to {output_update}')
+            except KeyError:  # key removed scenario
+                # accumulate name
+                name.append(key)
+                output_name = '.'.join(name)
+                # Gen output
+                blank.append(f'Property \'{output_name}\' was removed') 
+            name = list()
+
+        if sign == '+':
+            try: 
+                _ = diff[('-', key)] # added in previous step
+                pass
+            except KeyError: # means key was added
+                value = diff[('+', key)]
+                if is_dict(value):
+                    output_value = complex_value
+                else:
+                    output_value = json.dumps(value)
+                name.append(key)
+                output_name = '.'.join(name)
+                blank.append(f'Property \'{output_name}\' was added with value: {output_value}')
+            name = list()
+
+    result = '\n'.join(sorted(blank, key=lambda x: x[10]))
+    return result
+
+
+
+
+def format_json(diff: dict) -> str:
+    pass
+
+
