@@ -75,7 +75,7 @@ def test_compared_with_complex(jsoncomplex1, jsoncomplex2, yamlcomplex1, yamlcom
 
 #  stylish formatter
 def test_format_stylish_simple(json1, json2, yaml1, yaml2):
-    simple_stylish_view = '{\n  - follow: false\n    host: \"hexlet.io\"\n  - proxy: \"123.234.53.22\"\n  - timeout: 50\n  + timeout: 20\n  + verbose: true\n}'
+    simple_stylish_view = '{\n  - follow: false\n    host: hexlet.io\n  - proxy: 123.234.53.22\n  - timeout: 50\n  + timeout: 20\n  + verbose: true\n}'
     assert format_stylish(compared(decoded(json1), decoded(json2)))== simple_stylish_view
 
 # def test_format_stylish_complex(jsoncomplex1, jsoncomplex2, yamlcomplex1, yamlcomplex2):
