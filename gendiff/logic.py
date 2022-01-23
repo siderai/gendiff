@@ -92,7 +92,10 @@ def format_stylish(diff: dict, depth=1) -> str:
                 next_lvl = depth + 1
                 value = stylish_formatted_equals(value_view, next_lvl)
             else:
-                value = json.dumps(value_view)
+                if isinstance(value_view, bool):
+                    value = json.dumps(value_view)
+                else:
+                    value = value_view
 
             if sign == '=':
                 line = f'    {key}: {value}'
