@@ -67,7 +67,7 @@ def stylish_formatted_equals(node, depth=1) -> str:
             value = stylish_formatted_equals(node[key], next_lvl)
             line = f'    {key}: {value}'
         else:
-            if isinstance(node[key]):
+            if isinstance(node[key], bool):
                 value = json.dumps(node[key])
             else:
                 value = node[key]
