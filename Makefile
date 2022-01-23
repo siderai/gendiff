@@ -12,3 +12,7 @@ test:
 
 test-cov:
 	poetry run pytest --cov=gendiff --cov-report xml tests/
+
+test-cov-dev:
+	poetry run pytest --cov=gendiff
+
