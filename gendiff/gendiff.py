@@ -1,5 +1,5 @@
 #!/usr/bin/env
-from logic import decoded, compared, format_stylish, format_plain, format_json
+from .logic import decoded, compared, format_stylish, format_plain, format_json
 
 import argparse
 

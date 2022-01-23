@@ -1,5 +1,5 @@
 import json
-from gendiff.logic import decoded, is_dict, compared, format_stylish, format_plain, format_json
+from gendiff import decoded, is_dict, compared, format_stylish, format_plain, format_json
 
 import pytest
 import yaml
