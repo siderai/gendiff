@@ -55,8 +55,6 @@ def compared(file1: dict, file2: dict) -> dict:
     return diff
 
 
-
-
 def stylish_formatted_equals(node, depth=1) -> str:
     """Convert subdict to formatted string (for format_stylish())"""
     if not is_dict(node):
