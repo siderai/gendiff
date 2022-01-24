@@ -69,7 +69,7 @@ def stylish_sorted_str(blank: list, depth: int, indenter: str) -> str:
 def stylish_formatted_equals(node, depth=1) -> str:
     """Convert subdict to formatted string (for format_stylish())"""
     if not is_dict(node):
-        return json.dumps(node)
+        return node
     children = list()
     indenter = ' ' * 4 * (depth - 1)
     for key in node:
