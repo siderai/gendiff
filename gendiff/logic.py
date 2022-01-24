@@ -70,7 +70,7 @@ def stylish_formatted_equals(node, depth=1) -> str:
     """Convert subdict to formatted string (for format_stylish())"""
     if not is_dict(node):
         return json.dumps(node)
-    blank = list()
+    children = list()
     indenter = ' ' * 4 * (depth - 1)
     for key in node:
         if is_dict(node[key]):
@@ -78,17 +78,10 @@ def stylish_formatted_equals(node, depth=1) -> str:
             value = stylish_formatted_equals(node[key], next_lvl)
             line = f'    {key}: {value}'
         else:
-            if isinstance(node[key], bool):
-                value = json.dumps(node[key])
-            else:
-                value = node[key]
+            value = json.dumps(node[key])
             line = f'    {key}: {value}'
-        blank.append(indenter + line)
-    names_begin_with = (4 * depth)
-    blank = sorted(blank, key=lambda x: x[names_begin_with])
-    blank.insert(0, '{')
-    blank.append(indenter + '}')
-    result = '\n'.join(blank)
+        children.append(indenter + line)
+    result = stylish_sorted_str(children, depth, indenter)
     return result
 
 
@@ -112,7 +105,7 @@ def format_stylish(diff: dict, depth=1) -> str:
                 value = stylish_formatted_equals(value_view, next_lvl)
             else:
                 # generate value depending on type
-                if isinstance(value_view, bool):
+                if isinstance(value_view, bool) or value_view is None:
                     value = json.dumps(value_view)
                 else:
                     value = value_view
