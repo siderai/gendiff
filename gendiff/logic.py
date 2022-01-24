@@ -33,6 +33,8 @@ def compared(file1: dict, file2: dict) -> dict:
         common_keys = file1.keys() & file2.keys()
         first_only = file1.keys() - file2.keys()
         second_only = file2.keys() - file1.keys()
+    else:
+        raise Exception('Decoding error!')
     # create image of difference
     diff = {}
     # compare common keys
@@ -55,6 +57,15 @@ def compared(file1: dict, file2: dict) -> dict:
     return diff
 
 
+def stylish_sorted_str(blank: list, depth: int, indenter: str) -> str:
+    sorter = 4 * depth
+    blank = sorted(blank, key=lambda x: x[sorter:])
+    blank.insert(0, '{')
+    blank.append(indenter + '}')
+    result = '\n'.join(blank)
+    return result
+
+
 def stylish_formatted_equals(node, depth=1) -> str:
     """Convert subdict to formatted string (for format_stylish())"""
     if not is_dict(node):
@@ -73,6 +84,8 @@ def stylish_formatted_equals(node, depth=1) -> str:
                 value = node[key]
             line = f'    {key}: {value}'
         blank.append(indenter + line)
+    names_begin_with = (4 * depth)
+    blank = sorted(blank, key=lambda x: x[names_begin_with])
     blank.insert(0, '{')
     blank.append(indenter + '}')
     result = '\n'.join(blank)
@@ -83,37 +96,50 @@ def format_stylish(diff: dict, depth=1) -> str:
     """ Convert diff to json-like string. """
     blank = list()
     indenter = ' ' * 4 * (depth - 1)
+    # iterate diff complex keys
     for sign, key in diff:
         value_view = diff[(sign, key)]
         if sign == ' ':
             next_lvl = depth + 1
+            # sign ' ' means we need to run recursion
+            # to get value
             value = format_stylish(value_view, next_lvl)
             line = f'    {key}: {value}'
-        # combine if and else later
         else:
             if is_dict(value_view):
+                # generate value using parser for equal values
                 next_lvl = depth + 1
                 value = stylish_formatted_equals(value_view, next_lvl)
             else:
+                # generate value depending on type
                 if isinstance(value_view, bool):
                     value = json.dumps(value_view)
                 else:
                     value = value_view
-
-            if sign == '=':
-                line = f'    {key}: {value}'
-            else:
+        # generate whole line
+        if sign == '=':
+            line = f'    {key}: {value}'
+            blank.append(indenter + line)
+        elif sign == '-':
+            line = f'  {sign} {key}: {value}'
+            try:
+                # key updated
+                comparison_value = diff[('+', key)]
+                line2 = f'  + {key}: {comparison_value}'
+                blank.append(indenter + line + '\n' + indenter + line2)
+            except KeyError:
+                # key removed
+                blank.append(indenter + line)
+        else:
+            try:
+                comparison_value = diff[('-', key)]
+                continue
+            except KeyError:
+                # key added
                 line = f'  {sign} {key}: {value}'
+                blank.append(indenter + line)
 
-        blank.append(indenter + line)
-
-    # names start from index 4, sort them in alphabet order:
-    names_begin_with = (5 * depth) - 1
-    blank = sorted(blank, key=lambda x: x[names_begin_with])
-    blank.insert(0, '{')
-    blank.append(indenter + '}')
-    result = '\n'.join(blank)
-    return result
+    return stylish_sorted_str(blank, depth, indenter)
 
 
 def format_plain(diff: dict) -> str:
@@ -169,7 +195,7 @@ def format_plain(diff: dict) -> str:
             name = list()
             continue
 
-    result = '\n'.join(sorted(blank, key=lambda x: x[10]))
+    result = '\n'.join(sorted(blank, key=lambda x: x[10:]))
     return result
 
 
