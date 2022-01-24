@@ -78,7 +78,10 @@ def stylish_formatted_equals(node, depth=1) -> str:
             value = stylish_formatted_equals(node[key], next_lvl)
             line = f'    {key}: {value}'
         else:
-            value = json.dumps(node[key])
+            if isinstance(value_view, bool) or value_view is None:
+                value = json.dumps(value_view)
+            else:
+                value = value_view
             line = f'    {key}: {value}'
         children.append(indenter + line)
     result = stylish_sorted_str(children, depth, indenter)
