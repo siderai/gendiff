@@ -117,7 +117,7 @@ def format_stylish(diff: dict, depth=1) -> str:
             value = format_stylish(value_view, next_lvl)
             line = f'    {key}: {value}'
         else:
-            value = parse_value(value_view)
+            value = parse_value(value_view, depth)
         # generate whole line
         if sign == '=':
             # key didn't change
@@ -128,7 +128,7 @@ def format_stylish(diff: dict, depth=1) -> str:
             try:
                 # key updated
                 comparison_value = diff[('+', key)]
-                comparison_value = parse_value(comparison_value)
+                comparison_value = parse_value(comparison_value, depth)
                 line2 = f'  + {key}: {comparison_value}'
                 blank.append(indenter + line + '\n' + indenter + line2)
             except KeyError:
