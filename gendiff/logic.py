@@ -73,19 +73,34 @@ def stylish_formatted_equals(node, depth=1) -> str:
     children = list()
     indenter = ' ' * 4 * (depth - 1)
     for key in node:
-        if is_dict(node[key]):
+        item = node[key]
+        if is_dict(item):
             next_lvl = depth + 1
-            value = stylish_formatted_equals(node[key], next_lvl)
+            value = stylish_formatted_equals(item, next_lvl)
             line = f'    {key}: {value}'
         else:
-            if isinstance(node[key], bool) or node[key] is None:
-                value = json.dumps(node[key])
+            if isinstance(item, bool) or item is None:
+                value = json.dumps(item)
             else:
-                value = node[key]
+                value = item
             line = f'    {key}: {value}'
         children.append(indenter + line)
     result = stylish_sorted_str(children, depth, indenter)
     return result
+
+
+def parse_value(value_view, depth=1):
+    if is_dict(value_view):
+        # generate value using parser for equal values
+        next_lvl = depth + 1
+        value = stylish_formatted_equals(value_view, next_lvl)
+    else:
+        # generate value depending on type
+        if isinstance(value_view, bool) or value_view is None:
+            value = json.dumps(value_view)
+        else:
+            value = value_view
+    return value
 
 
 def format_stylish(diff: dict, depth=1) -> str:
@@ -102,18 +117,10 @@ def format_stylish(diff: dict, depth=1) -> str:
             value = format_stylish(value_view, next_lvl)
             line = f'    {key}: {value}'
         else:
-            if is_dict(value_view):
-                # generate value using parser for equal values
-                next_lvl = depth + 1
-                value = stylish_formatted_equals(value_view, next_lvl)
-            else:
-                # generate value depending on type
-                if isinstance(value_view, bool) or value_view is None:
-                    value = json.dumps(value_view)
-                else:
-                    value = value_view
+            value = parse_value(value_view)
         # generate whole line
         if sign == '=':
+            # key didn't change
             line = f'    {key}: {value}'
             blank.append(indenter + line)
         elif sign == '-':
@@ -121,6 +128,7 @@ def format_stylish(diff: dict, depth=1) -> str:
             try:
                 # key updated
                 comparison_value = diff[('+', key)]
+                comparison_value = parse_value(comparison_value)
                 line2 = f'  + {key}: {comparison_value}'
                 blank.append(indenter + line + '\n' + indenter + line2)
             except KeyError:
