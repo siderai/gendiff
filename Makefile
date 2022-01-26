@@ -1,6 +1,11 @@
 install:
 	poetry install
 
+package-install:
+	poetry install
+	poetry build
+	python3 -m pip install --user dist/*.whl
+
 lint:
 	poetry run flake8 gendiff
 

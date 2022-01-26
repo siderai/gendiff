@@ -4,8 +4,12 @@ version = "0.1.0"
 description = ""
 authors = ["Alexander Sidorov <pl4zie@gmail.com>"]
 packages = [
- { include = "gendiff" },
+{ include = "gendiff" }
 ]
+
+[tool.poetry.scripts]
+gendiff = "gendiff.gendiff:main"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 PyYAML = "^6.0"
