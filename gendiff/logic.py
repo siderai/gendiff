@@ -170,7 +170,7 @@ def value_formatter(value_view):
     if is_dict(value_view):
         value = '[complex value]'
     elif isinstance(value_view, str):
-        value = value_view
+        value = '\'' + value_view + '\''
     else:
         # translate plain updated value back to json
         value = get_value_from(value_view)
