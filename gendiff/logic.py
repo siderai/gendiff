@@ -194,25 +194,27 @@ def walk_plain(node, ancestry: list, blank: list):
                 name_updated = get_name(key, ancestry)
                 # gen output line
                 blank.append(f'Property \'{name_updated}\' was updated. '
-                             f'From {initial_value} to {updated_value}')
+                             f'From \'{initial_value}\' to \'{updated_value}\'')
 
         elif sign == '+':
             try:
                 _ = node[('-', key)]
                 continue  # avoid duplicates, diff is added at previous step
             except KeyError:  # means key was added
+                # accumulate name
+                name_added = get_name(key, ancestry)
                 value = node[('+', key)]
                 # if value is complex, don't go deeper
                 if is_dict(value):
                     added_value = complex_value
+                    blank.append(
+                        f'Property \'{name_added}\' was added '
+                        f'with value: {added_value}')
                 else:
                     added_value = get_value_from(value)
-                # accumulate name
-                name_added = get_name(key, ancestry)
-                # gen output line
-                blank.append(
-                    f'Property \'{name_added}\' was added '
-                    f'with value: {added_value}')
+                    blank.append(
+                        f'Property \'{name_added}\' was added '
+                        f'with value: \'{added_value}\'')
 
         elif sign == ' ':
             next_node = node[(' ', key)]
