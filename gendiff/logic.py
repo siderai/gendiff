@@ -166,8 +166,18 @@ def get_name(key, ancestry):
     return name
 
 
+def value_formatter(value_view):
+    if is_dict(value_view):
+        value = '[complex value]'
+    elif isinstance(value_view, str):
+        value = value_view
+    else:
+        # translate plain updated value back to json
+        value = get_value_from(value_view)
+    return value
+
+
 def walk_plain(node, ancestry: list, blank: list):
-    complex_value = '[complex value]'
     for sign, key in node:
         if sign == '-':
             # check if key was updated or just removed
@@ -180,21 +190,16 @@ def walk_plain(node, ancestry: list, blank: list):
                 # Gen output
                 blank.append(f'Property \'{name_removed}\' was removed')
             else:
-                # as key is updated, go for its new value
-                # if the value is complex, don't go deeper
-                if is_dict(updated_value_view):
-                    updated_value = complex_value
-                else:
-                    # translate plain updated value back to json
-                    updated_value = get_value_from(updated_value_view)
+                # accumulate name and new value
+                name_updated = get_name(key, ancestry)
+                updated_value = value_formatter(updated_value_view)
+
                 # get and translate initial value
                 initial_value_view = node[('-', key)]
-                initial_value = get_value_from(initial_value_view)
-                # accumulate name
-                name_updated = get_name(key, ancestry)
+                initial_value = value_formatter(initial_value_view)
                 # gen output line
                 blank.append(f'Property \'{name_updated}\' was updated. '
-                             f'From \'{initial_value}\' to \'{updated_value}\'')
+                             f'From {initial_value} to {updated_value}')
 
         elif sign == '+':
             try:
@@ -203,18 +208,10 @@ def walk_plain(node, ancestry: list, blank: list):
             except KeyError:  # means key was added
                 # accumulate name
                 name_added = get_name(key, ancestry)
-                value = node[('+', key)]
-                # if value is complex, don't go deeper
-                if is_dict(value):
-                    added_value = complex_value
-                    blank.append(
-                        f'Property \'{name_added}\' was added '
-                        f'with value: {added_value}')
-                else:
-                    added_value = get_value_from(value)
-                    blank.append(
-                        f'Property \'{name_added}\' was added '
-                        f'with value: \'{added_value}\'')
+                added_value_view = node[('+', key)]
+                added_value = value_formatter(added_value_view)
+                blank.append(f'Property \'{name_added}\' was added '
+                             f'with value: {added_value}')
 
         elif sign == ' ':
             next_node = node[(' ', key)]
