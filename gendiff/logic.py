@@ -1,4 +1,5 @@
 import json
+import copy
 
 import yaml
 
@@ -41,11 +42,14 @@ def compared(file1: dict, file2: dict) -> dict:
     for key in common_keys:
         value_in_first = file1[key]
         value_in_second = file2[key]
+        # mark equal items
         if value_in_first == value_in_second:
             diff[('=', key)] = value_in_first
+        # mark keys that need recursive comparison of values
         elif is_dict(value_in_first) and is_dict(value_in_second):
             diff[(' ', key)] = compared(value_in_first, value_in_second)
         else:
+            # mark initial and updated value of a common key
             diff[('-', key)] = value_in_first
             diff[('+', key)] = value_in_second
     # mark deleted keys
@@ -58,6 +62,7 @@ def compared(file1: dict, file2: dict) -> dict:
 
 
 def stylish_sorted_str(blank: list, depth: int, indenter: str) -> str:
+    """Data collector that finalizes stylish formatter"""
     sorter = 4 * depth
     blank = sorted(blank, key=lambda x: x[sorter:])
     blank.insert(0, '{')
@@ -67,7 +72,8 @@ def stylish_sorted_str(blank: list, depth: int, indenter: str) -> str:
 
 
 def stylish_formatted_equals(node, depth=1) -> str:
-    """Convert subdict to formatted string (for format_stylish())"""
+    """Convert node that has no diff info into
+    formatted string (as part of stylish formatter)"""
     if not is_dict(node):
         return node
     children = list()
@@ -90,6 +96,8 @@ def stylish_formatted_equals(node, depth=1) -> str:
 
 
 def parse_value(value_view, depth=1):
+    """ Value formatter that interprets diff
+    for proper result generation. """
     if is_dict(value_view):
         # generate value using parser for equal values
         next_lvl = depth + 1
@@ -146,59 +154,73 @@ def format_stylish(diff: dict, depth=1) -> str:
     return stylish_sorted_str(blank, depth, indenter)
 
 
-def format_plain(diff: dict) -> str:
-    '''Human-friendly output formatter'''
-    blank = list()
-    name = list()
+def get_name(key, ancestry):
+    node_ancestry = copy.copy(ancestry)
+    node_ancestry.append(key)
+    name = '.'.join(node_ancestry)
+    return name
+
+
+def walk_plain(node, ancestry: list, blank: list):
     complex_value = '[complex value]'
-    for sign, key in diff:
+    for sign, key in node:
         if sign == '-':
             # check if key was updated or just removed
             try:
-                # next line raises exception if key was removed
-                updated_value = diff[('+', key)]
-                if is_dict(updated_value):
-                    output_update = complex_value
-                else:
-                    # translate data from Python back to json
-                    output_update = json.dumps(updated_value)
-
-                initial_value = diff[('-', key)]
-                output_initial_value = json.dumps(initial_value)
-
+                # if key was updated there is new value for it
+                updated_value_view = node[('+', key)]
+            except KeyError:  # if no new value, key was removed
                 # accumulate name
-                name.append(key)
-                output_name = '.'.join(name)
-                # Gen diff output
-                blank.append(f'Property \'{output_name}\' was updated. '
-                             f'From {output_initial_value} to {output_update}')
-            except KeyError:  # key removed scenario
-                # accumulate name
-                name.append(key)
-                output_name = '.'.join(name)
+                name_removed = get_name(key, ancestry)
                 # Gen output
-                blank.append(f'Property \'{output_name}\' was removed')
-            name = list()
-            continue
-
-        if sign == '+':
-            try:
-                _ = diff[('-', key)]
-                continue  # avoid duplicates, info is added at previous step
-            except KeyError:  # means key was added, not updated
-                value = diff[('+', key)]
-                if is_dict(value):
-                    output_value = complex_value
+                blank.append(f'Property \'{name_removed}\' was removed')
+            else:
+                # as key is updated, go for its new value
+                # if the value is complex, don't go deeper
+                if is_dict(updated_value_view):
+                    updated_value = complex_value
                 else:
-                    output_value = json.dumps(value)
-                name.append(key)
-                output_name = '.'.join(name)
-                blank.append(
-                    f'Property \'{output_name}\' was added '
-                    f'with value: {output_value}')
-            name = list()
-            continue
+                    # translate plain updated value back to json
+                    updated_value = json.dumps(updated_value_view)
+                # get and translate initial value
+                initial_value_view = node[('-', key)]
+                initial_value = json.dumps(initial_value_view)
+                # accumulate name
+                name_updated = get_name(key, ancestry)
+                # gen output line
+                blank.append(f'Property \'{name_updated}\' was updated. '
+                             f'From {initial_value} to {updated_value}')
 
+        elif sign == '+':
+            try:
+                _ = node[('-', key)]
+                continue  # avoid duplicates, diff is added at previous step
+            except KeyError:  # means key was added
+                value = node[('+', key)]
+                # if value is complex, don't go deeper
+                if is_dict(value):
+                    added_value = complex_value
+                else:
+                    added_value = json.dumps(value)
+                # accumulate name
+                name_added = get_name(key, ancestry)
+                # gen output line
+                blank.append(
+                    f'Property \'{name_added}\' was added '
+                    f'with value: {added_value}')
+
+        elif sign == ' ':
+            next_node = node[(' ', key)]
+            new_ancestry = copy.copy(ancestry)
+            new_ancestry.append(key)
+            walk_plain(next_node, new_ancestry, blank)
+
+
+def format_plain(diff: dict) -> str:
+    '''Human-friendly output formatter'''
+    blank = list()
+    ancestry = list()
+    walk_plain(diff, ancestry, blank)
     result = '\n'.join(sorted(blank, key=lambda x: x[10:]))
     return result
 
