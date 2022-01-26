@@ -1,5 +1,6 @@
 import json  # noqa E902
-from gendiff import *
+from gendiff import decoded, is_dict, compared, format_stylish
+from gendiff import format_plain
 
 import pytest
 import yaml
@@ -142,5 +143,11 @@ def test_format_json__with_simple(json1, json2, yaml1, yaml2):
     # second = open('tests/fixtures/result_simple.json')
     # assert json.dumps(first) == json.dumps(second)
 
-# def test_format_json_with_complex(jsoncomplex1, jsoncomplex2, yamlcomplex1, yamlcomplex2):
-    # assert format_json(compared(decoded(jsoncomplex1), decoded(jsoncomplex2))) == open('tests/fixtures/result_complex.json')
+# def test_format_json_with_complex(jsoncomplex1,
+#                                   jsoncomplex2,
+#                                   yamlcomplex1,
+#                                   yamlcomplex2):
+    # assert format_json(compared(
+    #   decoded(jsoncomplex1),
+    #   decoded(
+    #       jsoncomplex2))) == open('tests/fixtures/result_complex.json')
