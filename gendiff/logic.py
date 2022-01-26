@@ -95,6 +95,14 @@ def stylish_formatted_equals(node, depth=1) -> str:
     return result
 
 
+def get_value_from(value_view):
+    if isinstance(value_view, bool) or value_view is None:
+        value = json.dumps(value_view)
+    else:
+        value = value_view
+    return value
+
+
 def parse_value(value_view, depth=1):
     """ Value formatter that interprets diff
     for proper result generation. """
@@ -104,10 +112,7 @@ def parse_value(value_view, depth=1):
         value = stylish_formatted_equals(value_view, next_lvl)
     else:
         # generate value depending on type
-        if isinstance(value_view, bool) or value_view is None:
-            value = json.dumps(value_view)
-        else:
-            value = value_view
+        value = get_value_from(value_view)
     return value
 
 
@@ -181,10 +186,10 @@ def walk_plain(node, ancestry: list, blank: list):
                     updated_value = complex_value
                 else:
                     # translate plain updated value back to json
-                    updated_value = json.dumps(updated_value_view)
+                    updated_value = get_value_from(updated_value_view)
                 # get and translate initial value
                 initial_value_view = node[('-', key)]
-                initial_value = json.dumps(initial_value_view)
+                initial_value = get_value_from(initial_value_view)
                 # accumulate name
                 name_updated = get_name(key, ancestry)
                 # gen output line
@@ -201,7 +206,7 @@ def walk_plain(node, ancestry: list, blank: list):
                 if is_dict(value):
                     added_value = complex_value
                 else:
-                    added_value = json.dumps(value)
+                    added_value = get_value_from(value)
                 # accumulate name
                 name_added = get_name(key, ancestry)
                 # gen output line
