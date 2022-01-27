@@ -71,6 +71,14 @@ def stylish_sorted_str(blank: list, depth: int, indenter: str) -> str:
     return result
 
 
+def get_value_from(value_view):
+    if isinstance(value_view, bool) or value_view is None:
+        value = json.dumps(value_view)
+    else:
+        value = value_view
+    return value
+
+
 def stylish_formatted_equals(node, depth=1) -> str:
     """Convert node that has no diff info into
     formatted string (as part of stylish formatter)"""
@@ -85,22 +93,11 @@ def stylish_formatted_equals(node, depth=1) -> str:
             value = stylish_formatted_equals(item, next_lvl)
             line = f'    {key}: {value}'
         else:
-            if isinstance(item, bool) or item is None:
-                value = json.dumps(item)
-            else:
-                value = item
+            value = get_value_from(item)
             line = f'    {key}: {value}'
         children.append(indenter + line)
     result = stylish_sorted_str(children, depth, indenter)
     return result
-
-
-def get_value_from(value_view):
-    if isinstance(value_view, bool) or value_view is None:
-        value = json.dumps(value_view)
-    else:
-        value = value_view
-    return value
 
 
 def parse_value(value_view, depth=1):
