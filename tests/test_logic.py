@@ -1,6 +1,6 @@
 import json  # noqa E902
 from gendiff import decoded, is_dict, compared, format_stylish
-from gendiff import format_plain
+from gendiff import format_plain, format_json
 
 import pytest
 import yaml
@@ -95,10 +95,7 @@ def test_compared_with_simple(json1, json2, yaml1, yaml2):
     assert compared(decoded(yaml1), decoded(yaml2)) == yaml_simple_view
 
 
-def test_compared_with_complex(jsoncomplex1,
-                               jsoncomplex2,
-                               yamlcomplex1,
-                               yamlcomplex2):
+def test_compared_with_complex(jsoncomplex1, jsoncomplex2):
     #  diff_complex_view = {}
     pass
 
@@ -112,16 +109,16 @@ def test_format_stylish_simple(json1, json2, yaml1, yaml2):
         decoded(json1),
         decoded(json2))) == simple_stylish_view
 
-# def test_format_stylish_complex(jsoncomplex1,
-#                   jsoncomplex2,
-#                   yamlcomplex1,
-#                   yamlcomplex2):
-    # assert format_stylish(compared(decoded(jsoncomplex1),
-    # decoded(jsoncomplex2))) == open('tests/fixtures/stylish.txt')
+
+def test_format_stylish_complex(jsoncomplex1, jsoncomplex2):
+    with open('tests/fixtures/stylish.txt') as f:
+        result = f.read()
+        assert format_stylish(compared(decoded(jsoncomplex1),
+               decoded(jsoncomplex2))) == result
 
 
 #  plain formatter
-def test_format_plain_simple(json1, json2, yaml1, yaml2):
+def test_format_plain_simple(json1, json2):
     assert format_plain(compared(
         decoded(json1), decoded(json2))) == 'Property \'follow\''\
         ' was removed\nProperty \'proxy\' was removed\nProperty \'timeout\''\
@@ -129,25 +126,15 @@ def test_format_plain_simple(json1, json2, yaml1, yaml2):
         ' 50 to 20\nProperty \'verbose\' was added with value: true'
 
 
-def test_format_plain_complex(jsoncomplex1,
-                              jsoncomplex2,
-                              yamlcomplex1,
-                              yamlcomplex2):
-    pass
+def test_format_plain_complex(jsoncomplex1, jsoncomplex2):
+    with open('tests/fixtures/plain.txt', 'r') as f:
+        result = f.read()
+        assert format_plain(compared(
+            decoded(jsoncomplex1),
+            decoded(jsoncomplex2))) == result
 
 
 #  json formatter
-def test_format_json__with_simple(json1, json2, yaml1, yaml2):
-    pass
-    # first = format_json(compared(decoded(json1), decoded(json2)))
-    # second = open('tests/fixtures/result_simple.json')
-    # assert json.dumps(first) == json.dumps(second)
-
-# def test_format_json_with_complex(jsoncomplex1,
-#                                   jsoncomplex2,
-#                                   yamlcomplex1,
-#                                   yamlcomplex2):
-    # assert format_json(compared(
-    #   decoded(jsoncomplex1),
-    #   decoded(
-    #       jsoncomplex2))) == open('tests/fixtures/result_complex.json')
+def test_format_json__with_simple(json1, json2):
+    res = format_json(compared(decoded(json1), decoded(json2)))
+    assert isinstance(res, str) is True
