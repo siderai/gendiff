@@ -1,18 +1,18 @@
 #!/usr/bin/env
-from .logic import decoded, compared, format_stylish, format_plain, format_json
-
 import argparse
+from .logic import decoded, compared, format_stylish, format_plain, format_json
 
 
 def generate_diff(filepath1, filepath2, format_='stylish'):
     file1, file2 = decoded(filepath1), decoded(filepath2)
     diff = compared(file1, file2)
-    if format_ == 'stylish':
-        return format_stylish(diff)
+    if format_ == 'json':
+        return format_json(diff)
     elif format_ == 'plain':
         return format_plain(diff)
-    elif format_ == 'json':
-        return format_json(diff)
+    else:
+        format_ == 'stylish'
+        return format_stylish(diff)
 
 
 def main():

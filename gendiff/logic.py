@@ -8,9 +8,10 @@ def decoded(filepath: str) -> dict:
     """ Yaml/json parser. """
     if filepath.endswith('.json'):
         return json.load(open(filepath))
+    elif filepath.endswith(('.yaml', '.yml')):
+        return yaml.load(open(filepath, mode='r'), Loader=yaml.Loader)
     else:
-        if filepath.endswith(('.yaml', '.yml')):
-            return yaml.load(open(filepath, mode='r'), Loader=yaml.Loader)
+        return None
 
 
 def is_dict(obj) -> bool:
@@ -34,9 +35,9 @@ def compared(file1: dict, file2: dict) -> dict:
         common_keys = file1.keys() & file2.keys()
         first_only = file1.keys() - file2.keys()
         second_only = file2.keys() - file1.keys()
-    else:
-        raise Exception('Decoding error!')
     # create image of difference
+    else:
+        raise Exception('Json/yaml parsing error')
     diff = {}
     # compare common keys
     for key in common_keys:
@@ -82,8 +83,6 @@ def get_value_from(value_view):
 def stylish_formatted_equals(node, depth=1) -> str:
     """Convert node that has no diff info into
     formatted string (as part of stylish formatter)"""
-    if not is_dict(node):
-        return node
     children = list()
     indenter = ' ' * 4 * (depth - 1)
     for key in node:
