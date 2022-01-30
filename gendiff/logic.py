@@ -11,7 +11,7 @@ def decoded(filepath: str) -> dict:
     elif filepath.endswith(('.yaml', '.yml')):
         return yaml.load(open(filepath, mode='r'), Loader=yaml.Loader)
     else:
-        return None
+        raise Exception('Json/yaml parsing error!')
 
 
 def is_dict(obj) -> bool:
@@ -37,7 +37,7 @@ def compared(file1: dict, file2: dict) -> dict:
         second_only = file2.keys() - file1.keys()
     # create image of difference
     else:
-        raise Exception('Json/yaml parsing error')
+        raise Exception('Json/yaml parsing error!')
     diff = {}
     # compare common keys
     for key in common_keys:
