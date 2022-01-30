@@ -47,13 +47,18 @@ def yamlcomplex2():
 
 
 @pytest.fixture
+def yml():
+    return 'tests/fixtures/yml.yml'
+
+
+@pytest.fixture
 def json_paths(json1, json2, jsoncomplex1, jsoncomplex2):
     return [json1, json2, jsoncomplex1, jsoncomplex2]
 
 
 @pytest.fixture
-def yaml_paths(yaml1, yaml2, yamlcomplex1, yamlcomplex2):
-    return [yaml1, yaml2, yamlcomplex1, yamlcomplex2]
+def yaml_paths(yaml1, yaml2, yamlcomplex1, yamlcomplex2, yml):
+    return [yaml1, yaml2, yamlcomplex1, yamlcomplex2, yml]
 
 
 def test_decoded_decodes(json_paths, yaml_paths):
@@ -61,6 +66,9 @@ def test_decoded_decodes(json_paths, yaml_paths):
         assert decoded(path) == json.load(open(path))
     for path in yaml_paths:
         assert decoded(path) == yaml.load(open(path), Loader=yaml.Loader)
+    
+    with pytest.raises(Exception):
+        assert decoded('plain.txt') == 'Json/yaml parsing error!'
 
 
 def test_decoded_uses_correct_parser(json1, yaml1):
@@ -74,7 +82,7 @@ def test_is_dict():
 
 
 # compared
-def test_compared_with_simple(json1, json2, yaml1, yaml2):
+def test_compared(json1, json2, yaml1, yaml2):
     json_simple_view = {
         ('=', 'host'): "hexlet.io",
         ('-', 'timeout'): 50,
@@ -95,9 +103,10 @@ def test_compared_with_simple(json1, json2, yaml1, yaml2):
     assert compared(decoded(yaml1), decoded(yaml2)) == yaml_simple_view
 
 
-def test_compared_with_complex(jsoncomplex1, jsoncomplex2):
-    #  diff_complex_view = {}
-    pass
+def test_compared_raises_exception():
+    with pytest.raises(Exception):
+        assert compared([], {}) == 'Decoding error!'
+
 
 
 #  stylish formatter
@@ -135,6 +144,9 @@ def test_format_plain_complex(jsoncomplex1, jsoncomplex2):
 
 
 #  json formatter
-def test_format_json__with_simple(json1, json2):
+def test_format_json__with_simple(json1, json2, jsoncomplex1, jsoncomplex2):
     res = format_json(compared(decoded(json1), decoded(json2)))
     assert isinstance(res, str) is True
+    deep = format_json(compared(
+        decoded(jsoncomplex1), decoded(jsoncomplex2)))
+    assert isinstance(deep, str) is True

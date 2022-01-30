@@ -11,9 +11,8 @@ filepath2 = 'tests/fixtures/complex2.json'
 simple1 = 'tests/fixtures/file1.json'
 simple2 = 'tests/fixtures/file2.json'
 
-
 def test_json():
-    output = generate_diff(simple1, simple2, format_='json')
+    output = generate_diff(filepath1, filepath2, format_='json')
     assert isinstance(output, str) is True
 
 
