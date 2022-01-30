@@ -66,7 +66,6 @@ def test_decoded_decodes(json_paths, yaml_paths):
         assert decoded(path) == json.load(open(path))
     for path in yaml_paths:
         assert decoded(path) == yaml.load(open(path), Loader=yaml.Loader)
-    
     with pytest.raises(Exception):
         assert decoded('plain.txt') == 'Json/yaml parsing error!'
 
@@ -106,7 +105,6 @@ def test_compared(json1, json2, yaml1, yaml2):
 def test_compared_raises_exception():
     with pytest.raises(Exception):
         assert compared([], {}) == 'Decoding error!'
-
 
 
 #  stylish formatter
