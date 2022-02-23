@@ -1,5 +1,6 @@
 import json
 import copy
+from typing import List, Any, Dict
 
 import yaml
 
@@ -218,8 +219,8 @@ def walk_plain(node, ancestry: list, blank: list):
 
 def format_plain(diff: dict) -> str:
     '''Human-friendly output formatter'''
-    blank = list()
-    ancestry = list()
+    blank: List[str] = list()
+    ancestry: List[str] = list()
     walk_plain(diff, ancestry, blank)
     result = '\n'.join(sorted(blank, key=lambda x: x[10:]))
     return result
