@@ -11,7 +11,6 @@ def generate_diff(filepath1, filepath2, format_='stylish'):
     elif format_ == 'plain':
         return format_plain(diff)
     else:
-        format_ == 'stylish'
         return format_stylish(diff)
 
 
