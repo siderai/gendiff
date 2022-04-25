@@ -82,7 +82,7 @@ def format_plain(diff: dict) -> str:
     return "\n".join(sorted(blank, key=lambda x: x[10:]))
 
 
-def format_stylish(diff: dict, depth=1) -> str:
+def format_stylish(diff: dict, depth: int = 1) -> str:
     """Convert diff to json-like string"""
     blank: List[str] = list()
     indenter: str = " " * 4 * (depth - 1)
@@ -139,7 +139,7 @@ def _stylish_sorted_str(blank: List[str], depth: int, indenter: str) -> str:
     return result
 
 
-def walk_plain(node, ancestry: list, blank: list) -> None:
+def walk_plain(node: Any, ancestry: list, blank: list) -> None:
     '''Tree traversal to format nodes for plaintext output'''
     for sign, key in node:
         if sign == "-":
