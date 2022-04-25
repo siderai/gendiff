@@ -235,7 +235,8 @@ def walk_plain(node, ancestry: list, blank: list):
                 added_value_view = node[("+", key)]
                 added_value = _plain_value_formatter(added_value_view)
                 blank.append(
-                    f"Property '{name_added}' was added " f"with value: {added_value}"
+                    f"Property '{name_added}' was added "
+                    f"with value: {added_value}"
                 )
 
         elif sign == " ":
