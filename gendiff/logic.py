@@ -79,21 +79,24 @@ def format_plain(diff: dict) -> str:
     blank: List[str] = list()
     ancestry: List[str] = list()
     walk_plain(diff, ancestry, blank)
-    result = "\n".join(sorted(blank, key=lambda x: x[10:]))
-    return result
+    return "\n".join(sorted(blank, key=lambda x: x[10:]))
 
 
 def format_stylish(diff: dict, depth=1) -> str:
-    """Convert diff to json-like string."""
-    blank = list()
-    indenter = " " * 4 * (depth - 1)
-    # iterate diff complex keys
+    """Convert diff to json-like string"""
+    blank: List[str] = list()
+    indenter: str = " " * 4 * (depth - 1)
+    walk_stylish(diff, blank, indenter, depth)
+    return _stylish_sorted_str(blank, depth, indenter)
+
+
+def walk_stylish(diff: dict, blank: list, indenter: str, depth: int) -> None:
+    '''Tree traversal to format nodes for stylish output'''
     for sign, key in diff:
         value_view = diff[(sign, key)]
         if sign == " ":
             next_lvl = depth + 1
-            # sign ' ' means we need to run recursion
-            # to get value
+            # sign ' ' means we need to run recursion to get value
             value = format_stylish(value_view, next_lvl)
             line = f"    {key}: {value}"
         else:
@@ -123,8 +126,6 @@ def format_stylish(diff: dict, depth=1) -> str:
                 line = f"  {sign} {key}: {value}"
                 blank.append(indenter + line)
 
-    return _stylish_sorted_str(blank, depth, indenter)
-
 
 def _stylish_sorted_str(blank: List[str], depth: int, indenter: str) -> str:
     """Data collector that finalizes stylish formatter.
@@ -136,6 +137,54 @@ def _stylish_sorted_str(blank: List[str], depth: int, indenter: str) -> str:
     blank.append(indenter + "}")
     result = "\n".join(blank)
     return result
+
+
+def walk_plain(node, ancestry: list, blank: list) -> None:
+    '''Tree traversal to format nodes for plaintext output'''
+    for sign, key in node:
+        if sign == "-":
+            # check if key was updated or just removed
+            try:
+                # if key was updated there is new value for it
+                updated_value_view = node[("+", key)]
+            except KeyError:  # if no new value, key was removed
+                # accumulate name
+                name_removed = _get_node_name(key, ancestry)
+                # Gen output
+                blank.append(f"Property '{name_removed}' was removed")
+            else:
+                # accumulate name and new value
+                name_updated = _get_node_name(key, ancestry)
+                updated_value = _plain_value_formatter(updated_value_view)
+
+                # get and translate initial value
+                initial_value_view = node[("-", key)]
+                initial_value = _plain_value_formatter(initial_value_view)
+                # gen output line
+                blank.append(
+                    f"Property '{name_updated}' was updated. "
+                    f"From {initial_value} to {updated_value}"
+                )
+
+        elif sign == "+":
+            try:
+                _ = node[("-", key)]
+                continue  # avoid duplicates, diff is added at previous step
+            except KeyError:  # means key was added
+                # accumulate name
+                name_added = _get_node_name(key, ancestry)
+                added_value_view = node[("+", key)]
+                added_value = _plain_value_formatter(added_value_view)
+                blank.append(
+                    f"Property '{name_added}' was added "
+                    f"with value: {added_value}"
+                )
+
+        elif sign == " ":
+            next_node = node[(" ", key)]
+            new_ancestry = copy.copy(ancestry)
+            new_ancestry.append(key)
+            walk_plain(next_node, new_ancestry, blank)
 
 
 def _get_value_from(value_view):
@@ -197,53 +246,6 @@ def _plain_value_formatter(value_view):
         # translate plain updated value back to json
         value = _get_value_from(value_view)
     return value
-
-
-def walk_plain(node, ancestry: list, blank: list):
-    for sign, key in node:
-        if sign == "-":
-            # check if key was updated or just removed
-            try:
-                # if key was updated there is new value for it
-                updated_value_view = node[("+", key)]
-            except KeyError:  # if no new value, key was removed
-                # accumulate name
-                name_removed = _get_node_name(key, ancestry)
-                # Gen output
-                blank.append(f"Property '{name_removed}' was removed")
-            else:
-                # accumulate name and new value
-                name_updated = _get_node_name(key, ancestry)
-                updated_value = _plain_value_formatter(updated_value_view)
-
-                # get and translate initial value
-                initial_value_view = node[("-", key)]
-                initial_value = _plain_value_formatter(initial_value_view)
-                # gen output line
-                blank.append(
-                    f"Property '{name_updated}' was updated. "
-                    f"From {initial_value} to {updated_value}"
-                )
-
-        elif sign == "+":
-            try:
-                _ = node[("-", key)]
-                continue  # avoid duplicates, diff is added at previous step
-            except KeyError:  # means key was added
-                # accumulate name
-                name_added = _get_node_name(key, ancestry)
-                added_value_view = node[("+", key)]
-                added_value = _plain_value_formatter(added_value_view)
-                blank.append(
-                    f"Property '{name_added}' was added "
-                    f"with value: {added_value}"
-                )
-
-        elif sign == " ":
-            next_node = node[(" ", key)]
-            new_ancestry = copy.copy(ancestry)
-            new_ancestry.append(key)
-            walk_plain(next_node, new_ancestry, blank)
 
 
 def is_dict(obj: Any) -> bool:
