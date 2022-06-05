@@ -200,8 +200,8 @@ def _get_value_from(value_view):
 
 def _stylish_formatted_equals(node, depth=1) -> str:
     """Parser for nodes that have no diff sign from after compared().
-    Keys are equal, but keys need recursive comparison.
-    Produces formatted string (to be used part of stylish formatter)"""
+    Keys are equal, but values need recursive comparison.
+    Produces formatted string"""
     children = list()
     indenter = " " * 4 * (depth - 1)
     for key in node:
