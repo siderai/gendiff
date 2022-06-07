@@ -1,6 +1,8 @@
 #!/usr/bin/env
 import argparse
-from .logic import decoded, compared, format_stylish, format_plain, format_json
+
+from .logic import decoded, compared
+from .formatters import format_stylish, format_plain, format_json
 
 
 def generate_diff(filepath1, filepath2, format_="stylish"):

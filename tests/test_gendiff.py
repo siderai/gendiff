@@ -1,10 +1,6 @@
 from gendiff import generate_diff
 
 
-def test_help():
-    pass
-
-
 filepath1 = 'tests/fixtures/complex1.json'
 filepath2 = 'tests/fixtures/complex2.json'
 

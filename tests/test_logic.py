@@ -1,6 +1,6 @@
 import json  # noqa E902
-from gendiff import decoded, is_dict, compared, format_stylish
-from gendiff import format_plain, format_json
+from gendiff import decoded, is_dict, compared
+from gendiff import format_stylish, format_plain, format_json
 
 import pytest
 import yaml
