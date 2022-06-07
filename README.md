@@ -25,7 +25,9 @@ optional arguments:
 **_Codebase info_**: 
 
 In logic.py there is a decoding and comparison functionality.
+
 In formatters.py there are functions to generate output from internal comparison data.
+
 In gendiff.py there is "generate_diff" function, which creates data pipeline, connecting all the pieces together. Running this module as a script will provide CLI. In case you need a direct access, the whole functionality can easily be imported to your project with "generate_diff" as a library function. 
 
 Training project at hexlet.io.
