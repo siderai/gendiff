@@ -11,7 +11,7 @@ def decoded(filepath: str) -> dict:
     elif filepath.endswith((".yaml", ".yml")):
         return yaml.load(open(filepath, mode="r"), Loader=yaml.Loader)
     else:
-        raise Exception("Json/yaml parsing error!")
+        raise json.JSONDecodeError("Json/yaml parsing error!")
 
 
 def compared(file1: dict, file2: dict) -> dict:
