@@ -36,33 +36,33 @@ def compared(file1: dict, file2: dict) -> dict:
         raise Exception("Json/yaml parsing error!")
 
     diff = {}  # diff is an image of difference to store compared
-    
+
     # compare common keys
     for key in common_keys:
         value_in_first = file1[key]
         value_in_second = file2[key]
-        
+
         # equal items
         if value_in_first == value_in_second:
             diff[("=", key)] = value_in_first
-        
+
         # nested values need recursive comparison
         elif is_dict(value_in_first) and is_dict(value_in_second):
             diff[(" ", key)] = compared(value_in_first, value_in_second)
-        
+
         # value was updated
         else:
             diff[("-", key)] = value_in_first
             diff[("+", key)] = value_in_second
-    
+
     # deleted items
     for key in first_only:
         diff[("-", key)] = file1[key]
-    
+
     # added items
     for key in second_only:
         diff[("+", key)] = file2[key]
-    
+
     return diff
 
 
