@@ -1,20 +1,25 @@
 import json
-from typing import Any
+from collections import namedtuple
+from typing import Any, Mapping, NamedTuple, Union
 
 import yaml
 
 
-def decoded(filepath: str) -> dict:
+def decoded(filepath: str) -> Union[dict, None]:
     """Yaml/json parser."""
-    if filepath.endswith(".json"):
-        return json.load(open(filepath))
-    elif filepath.endswith((".yaml", ".yml")):
-        return yaml.load(open(filepath, mode="r"), Loader=yaml.Loader)
-    else:
-        raise json.JSONDecodeError("Json/yaml parsing error!")
+    try:
+        if filepath.endswith(".json"):
+            return json.load(open(filepath))
+        elif filepath.endswith((".yaml", ".yml")):
+            return yaml.load(open(filepath, mode="r"), Loader=yaml.Loader)
+    except (json.JSONDecodeError, yaml.YAMLError):
+        raise ValueError("Failed to deserialize json/yaml file!")
 
 
-def compared(file1: dict, file2: dict) -> dict:
+ComparedKey = namedtuple("ComparedKey", ["mark", "key"])  # compared data template
+
+
+def compared(file1: dict, file2: dict) -> Union[Mapping[NamedTuple, Any], None]:
     """
     Compare two dicts and create image of their difference.
     In addition to original keys, there are markers that store
@@ -31,11 +36,10 @@ def compared(file1: dict, file2: dict) -> dict:
         common_keys = file1.keys() & file2.keys()
         first_only = file1.keys() - file2.keys()
         second_only = file2.keys() - file1.keys()
-
     else:
         raise Exception("Json/yaml parsing error!")
 
-    diff = {}  # diff is an image of difference to store compared
+    diff = {}  # init an image of difference
 
     # compare common keys
     for key in common_keys:
@@ -44,24 +48,24 @@ def compared(file1: dict, file2: dict) -> dict:
 
         # equal items
         if value_in_first == value_in_second:
-            diff[("=", key)] = value_in_first
+            diff[ComparedKey("=", key)] = value_in_first
 
         # nested values need recursive comparison
         elif is_dict(value_in_first) and is_dict(value_in_second):
-            diff[(" ", key)] = compared(value_in_first, value_in_second)
+            diff[ComparedKey(" ", key)] = compared(value_in_first, value_in_second)
 
         # value was updated
         else:
-            diff[("-", key)] = value_in_first
-            diff[("+", key)] = value_in_second
+            diff[ComparedKey("-", key)] = value_in_first
+            diff[ComparedKey("+", key)] = value_in_second
 
     # deleted items
     for key in first_only:
-        diff[("-", key)] = file1[key]
+        diff[ComparedKey("-", key)] = file1[key]
 
     # added items
     for key in second_only:
-        diff[("+", key)] = file2[key]
+        diff[ComparedKey("+", key)] = file2[key]
 
     return diff
 

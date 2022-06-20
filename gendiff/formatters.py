@@ -1,20 +1,20 @@
 import json
 import copy
-from typing import List, Any
+from typing import List, Any, Mapping, NamedTuple
 
-from .logic import is_dict
+from .logic import is_dict, ComparedKey
 
 
-def format_json(diff: dict) -> str:
+def format_json(diff: Mapping[NamedTuple, Any]) -> str:
     """Return diff as json"""
     blank = dict()
-    for sign, key in diff:
-        keyword = f"{sign} {key}"
+    for mark, key in diff:
+        keyword = f"{mark} {key}"
         equal_keyword = f"  {key}"
-        value = diff[(sign, key)]
-        if sign == "=":
+        value = diff[ComparedKey(mark, key)]
+        if mark == "=":
             blank[equal_keyword] = value
-        elif sign == " ":
+        elif mark == " ":
             blank[keyword] = format_stylish(value)
         else:
             blank[keyword] = value
@@ -22,15 +22,17 @@ def format_json(diff: dict) -> str:
     return result
 
 
-def format_plain(diff: dict) -> str:
+def format_plain(diff: Mapping[NamedTuple, Any]) -> str:
     """Human-friendly output formatter"""
     blank: List[str] = list()
     ancestry: List[str] = list()
     walk_plain(diff, ancestry, blank)
-    return "\n".join(sorted(blank, key=lambda x: x[10:]))
+    return "\n".join(
+        sorted(blank, key=lambda x: x[10:])
+    )  # 10th char is the first non-empty
 
 
-def format_stylish(diff: dict, depth: int = 1) -> str:
+def format_stylish(diff: Mapping[NamedTuple, Any], depth: int = 1) -> str:
     """Convert diff to json-like string"""
     blank: List[str] = list()
     indenter: str = " " * 4 * (depth - 1)
@@ -38,27 +40,29 @@ def format_stylish(diff: dict, depth: int = 1) -> str:
     return _stylish_sorted_str(blank, depth, indenter)
 
 
-def walk_stylish(diff: dict, blank: list, indenter: str, depth: int) -> None:
-    '''Tree traversal to format nodes for stylish output'''
-    for sign, key in diff:
-        value_view = diff[(sign, key)]
-        if sign == " ":
+def walk_stylish(
+    diff: Mapping[NamedTuple, Any], blank: list, indenter: str, depth: int
+) -> None:
+    """Tree traversal to format nodes for stylish output"""
+    for mark, key in diff:
+        value_view = diff[ComparedKey(mark, key)]
+        if mark == " ":
             next_lvl = depth + 1
-            # sign ' ' means we need to run recursion to get value
+            # mark ' ' means we need to run recursion to get value
             value = format_stylish(value_view, next_lvl)
             line = f"    {key}: {value}"
         else:
             value = _parse_value(value_view, depth)
         # generate whole line
-        if sign == "=":
+        if mark == "=":
             # key didn't change
             line = f"    {key}: {value}"
             blank.append(indenter + line)
-        elif sign == "-":
-            line = f"  {sign} {key}: {value}"
+        elif mark == "-":
+            line = f"  {mark} {key}: {value}"
             try:
                 # key updated
-                comparison_value = diff[("+", key)]
+                comparison_value = diff[ComparedKey("+", key)]
                 comparison_value = _parse_value(comparison_value, depth)
                 line2 = f"  + {key}: {comparison_value}"
                 blank.append(indenter + line + "\n" + indenter + line2)
@@ -67,11 +71,11 @@ def walk_stylish(diff: dict, blank: list, indenter: str, depth: int) -> None:
                 blank.append(indenter + line)
         else:
             try:
-                comparison_value = diff[("-", key)]
+                comparison_value = diff[ComparedKey("-", key)]
                 continue
             except KeyError:
                 # key added
-                line = f"  {sign} {key}: {value}"
+                line = f"  {mark} {key}: {value}"
                 blank.append(indenter + line)
 
 
@@ -88,9 +92,9 @@ def _stylish_sorted_str(blank: List[str], depth: int, indenter: str) -> str:
 
 
 def walk_plain(node: Any, ancestry: list, blank: list) -> None:
-    '''Tree traversal to format nodes for plaintext output'''
-    for sign, key in node:
-        if sign == "-":
+    """Tree traversal to format nodes for plaintext output"""
+    for mark, key in node:
+        if mark == "-":
             # check if key was updated or just removed
             try:
                 # if key was updated there is new value for it
@@ -114,7 +118,7 @@ def walk_plain(node: Any, ancestry: list, blank: list) -> None:
                     f"From {initial_value} to {updated_value}"
                 )
 
-        elif sign == "+":
+        elif mark == "+":
             try:
                 _ = node[("-", key)]
                 continue  # avoid duplicates, diff is added at previous step
@@ -124,18 +128,17 @@ def walk_plain(node: Any, ancestry: list, blank: list) -> None:
                 added_value_view = node[("+", key)]
                 added_value = _plain_value_formatter(added_value_view)
                 blank.append(
-                    f"Property '{name_added}' was added "
-                    f"with value: {added_value}"
+                    f"Property '{name_added}' was added " f"with value: {added_value}"
                 )
 
-        elif sign == " ":
+        elif mark == " ":
             next_node = node[(" ", key)]
             new_ancestry = copy.copy(ancestry)
             new_ancestry.append(key)
             walk_plain(next_node, new_ancestry, blank)
 
 
-def _get_value_from(value_view):
+def _get_value_from(value_view: Any):
     """Type dependent parser for flat values.
     As json and yaml use different keywords for bool (false, true)
     and None (null), we should put them into final diff view"""
@@ -146,8 +149,8 @@ def _get_value_from(value_view):
     return value
 
 
-def _stylish_formatted_equals(node, depth=1) -> str:
-    """Parser for nodes that have no diff sign from after compared().
+def _stylish_formatted_equals(node: Any, depth=1) -> str:
+    """Parser for nodes that have no diff mark from after compared().
     Keys are equal, but values need recursive comparison.
     Produces formatted string"""
     children = list()
@@ -166,7 +169,7 @@ def _stylish_formatted_equals(node, depth=1) -> str:
     return result
 
 
-def _parse_value(value_view, depth=1):
+def _parse_value(value_view: Any, depth=1):
     """Generic value parser and formatter"""
     if is_dict(value_view):
         # parse nested value
@@ -178,14 +181,14 @@ def _parse_value(value_view, depth=1):
     return value
 
 
-def _get_node_name(key, ancestry):
+def _get_node_name(key: Any, ancestry: list):
     node_ancestry = copy.copy(ancestry)
     node_ancestry.append(key)
     name = ".".join(node_ancestry)
     return name
 
 
-def _plain_value_formatter(value_view):
+def _plain_value_formatter(value_view: Any):
     if is_dict(value_view):
         value = "[complex value]"
     elif isinstance(value_view, str):
